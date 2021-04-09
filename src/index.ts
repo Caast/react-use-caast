@@ -1,3 +1,2 @@
 import useCaast from './useCaast';
-
-export { useCaast };
+export default useCaast;

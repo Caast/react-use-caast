@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 
 type Caast = {
   infos(): void;
@@ -12,52 +12,49 @@ type Caast = {
 declare global {
   interface Window {
     caast: Caast;
+    CaastInstance: boolean;
   }
 }
 
 interface CaastOptions {
-  APP_ID: string;
-  APP_KEY: string;
-  ENV: 'latest' | 'staging';
+  app_id: string;
+  app_key: string;
+  env?: 'latest' | 'staging';
 }
 
-export default function useCaast<Caast>(props: CaastOptions): Caast | undefined {
-  const { APP_ID, APP_KEY, ENV } = props;
-  const caastInstance = useRef<any>();
+export default function useCaast(props: CaastOptions) {
+  const { app_id, app_key, env } = props;
+  const [caastInstance, setCaastInstance] = useState<Caast | undefined>(undefined);
+
+  const insertScript = (url: string) => {
+    const script = document.createElement('script');
+    script.setAttribute('src', url);
+    script.setAttribute('id', 'caast_library');
+    script.setAttribute('async', 'true');
+    document.head.appendChild(script);
+  };
 
   const onReady = () => {
-    caastInstance.current = window.caast;
+    setCaastInstance(window.caast);
   };
 
   useEffect(() => {
-    if (APP_ID && APP_KEY) {
-      // @ts-ignore
-      const isCaastLoaded = window.CaastInstance || document.getElementById('caast_library');
-      if (!isCaastLoaded) {
-        (function(c, a, A, s, t, J, S) {
-          (c[t] = c[t]), (J = a.createElement(A)), (S = a.getElementsByTagName(A)[0]);
-          J.async = 1;
-          J.src = s;
-          J.id = 'caast_library';
-          console.log('J', J);
-          console.log('S', S);
-          S.parentNode.insertBefore(J, S);
-        })(
-          window,
-          document,
-          'script',
-          'https://cdn.caast.tv/caast-' + ENV ? ENV : 'latest' + '/caast.js?APP_ID=' + APP_ID + '&APP_KEY=' + APP_KEY,
-          'caast'
-        );
-        document.addEventListener('caast.onReady', onReady);
-      } else {
-        caastInstance.current = window.caast;
+    if (app_id && app_key) {
+      if (!caastInstance) {
+        const URL = `https://cdn.caast.tv/caast-${env ? env : 'latest'}/caast.js?APP_ID=${app_id}&APP_KEY=${app_key}`;
+        const isCaastLoaded = window.CaastInstance || document.getElementById('caast_library');
+        if (!isCaastLoaded) {
+          insertScript(URL);
+          document.addEventListener('caast.onReady', onReady);
+        } else {
+          setCaastInstance(window.caast);
+        }
       }
       return () => document.removeEventListener('caast.onReady', onReady);
     } else {
-      console.log('useCaast hook is missing APP_KEY or APP_ID');
+      console.log('useCaast hook is missing app_id or app_key');
     }
-  });
+  }, [app_id, app_key, env, caastInstance]);
 
-  return caastInstance.current;
+  return caastInstance;
 }
