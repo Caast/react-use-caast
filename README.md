@@ -30,7 +30,7 @@ This hook allow you to simply implement Caast library on a React project. It wil
 
 ```javascript
 import React, { useState } from 'react';
-import { useDebounce } from 'react-use-caast';
+import { useCaast } from 'react-use-caast';
 
 export default function App() {
   const [caastInstance] = useCaast({ APP_ID: 'MY_APP_ID', APP_KEY: 'MY_APP_KEY' });
