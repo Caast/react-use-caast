@@ -34,27 +34,30 @@ export default function useCaast(props: CaastOptions) {
     document.head.appendChild(script);
   };
 
-  const onReady = () => {
-    setCaastInstance(window.caast);
-  };
-
   useEffect(() => {
     if (app_id && app_key) {
+      const onLoaded = () => {
+        setCaastInstance(window.caast);
+      };
+      const isCaastLoaded = window.CaastInstance || document.getElementById('caast_library');
       if (!caastInstance) {
         const URL = `https://cdn.caast.tv/caast-${env ? env : 'latest'}/caast.js?APP_ID=${app_id}&APP_KEY=${app_key}`;
-        const isCaastLoaded = window.CaastInstance || document.getElementById('caast_library');
         if (!isCaastLoaded) {
           insertScript(URL);
-          document.addEventListener('caast.onReady', onReady);
+          document.addEventListener('caast.onLoaded', onLoaded);
         } else {
           setCaastInstance(window.caast);
         }
       }
-      return () => document.removeEventListener('caast.onReady', onReady);
+      return () => {
+        if (isCaastLoaded) {
+          document.removeEventListener('caast.onLoaded', onLoaded);
+        }
+      };
     } else {
-      console.log('useCaast hook is missing app_id or app_key');
+      console.error('useCaast hook is missing app_id or app_key');
     }
-  }, [app_id, app_key, env, caastInstance]);
+  }, []);
 
   return caastInstance;
 }

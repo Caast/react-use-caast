@@ -1,6 +1,6 @@
 {
   "name": "@caast/react-use-caast",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "A simple hook implementation to implement Caast on a React project",
   "main": "lib/index.js",
   "module": "esm/index.js",
